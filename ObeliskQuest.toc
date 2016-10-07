@@ -4,4 +4,5 @@
 ## Notes: Upgraded questing UI
 ## Version: 0.1a
 
-main.lua
+rewards.lua
+automaticTracking.lua
