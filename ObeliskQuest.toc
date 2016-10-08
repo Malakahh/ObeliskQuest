@@ -6,3 +6,4 @@
 
 rewards.lua
 zoneTracking.lua
+objectiveTracker.lua
