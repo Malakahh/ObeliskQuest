@@ -47,6 +47,6 @@ function frame:QUEST_FINISHED()
 	self:Hide()
 end
 
-function frame:QUEST_COMPLETE()
+function frame:QUEST_DETAIL()
 	self:Hide()
 end
