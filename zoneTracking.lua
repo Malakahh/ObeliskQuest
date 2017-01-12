@@ -19,13 +19,27 @@ end
 local function TrackByZone()
 	UntrackAll()
 
-	SetMapToCurrentZone()
-	local currentMapID = GetCurrentMapAreaID()
+	--SetMapToCurrentZone()
+	local currentMapName = GetZoneText()
 
-	for i = 1, GetNumQuestLogEntries() do
-		if GetQuestWorldMapAreaID(LogIndexToQuestID(i)) == currentMapID then
-			AddQuestWatch(i)
+	local i = 1
+	local watchQuest = false
+
+	while GetQuestLogTitle(i) do
+		local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
+
+		if isHeader then
+			if title == currentMapName then
+				watchQuest = true
+			elseif watchQuest then
+				watchQuest = false
+				break
+			end
+		elseif watchQuest then
+			AddQuestWatch(GetQuestLogIndexByID(questID))
 		end
+
+		i = i + 1
 	end
 end
 
