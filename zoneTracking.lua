@@ -4,10 +4,6 @@ frame:RegisterEvent("QUEST_ACCEPTED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-local function LogIndexToQuestID(index)
-	return select(8, GetQuestLogTitle(index))
-end
-
 local function UntrackAll()
 	for i = 1, GetNumQuestLogEntries() do
 		if IsQuestWatched(i) then
@@ -32,7 +28,6 @@ local function TrackByZone()
 			if title == currentMapName then
 				watchQuest = true
 			elseif watchQuest then
-				watchQuest = false
 				break
 			end
 		elseif watchQuest then
