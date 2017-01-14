@@ -2,7 +2,7 @@ local frame = CreateFrame("Frame")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 frame:RegisterEvent("QUEST_ACCEPTED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("LOADING_SCREEN_DISABLED")
 
 local function UntrackAll()
 	for i = 1, GetNumQuestLogEntries() do
@@ -15,8 +15,9 @@ end
 local function TrackByZone()
 	UntrackAll()
 
-	--SetMapToCurrentZone()
-	local currentMapName = GetZoneText()
+	--local currentMapName = GetZoneText()
+	SetMapToCurrentZone()
+	local currentMapName = GetMapNameByID(GetCurrentMapAreaID())
 
 	local i = 1
 	local watchQuest = false
@@ -46,6 +47,7 @@ function frame:ZONE_CHANGED_NEW_AREA()
 	TrackByZone()
 end
 
-function frame:PLAYER_ENTERING_WORLD()
+function frame:LOADING_SCREEN_DISABLED()
 	TrackByZone()
 end
+
