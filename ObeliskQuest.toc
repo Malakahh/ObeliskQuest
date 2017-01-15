@@ -4,7 +4,11 @@
 ## Notes: Upgraded questing UI
 ## Version: 0.4a
 
+## SavedVariables: OQ
+
+util.lua
 rewards.lua
 zoneTracking.lua
 zoneAbandon.lua
+objectiveTrackerMenu.lua
 objectiveTrackerMoveResize.lua

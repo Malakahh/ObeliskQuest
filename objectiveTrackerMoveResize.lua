@@ -1,3 +1,23 @@
+local _, ns = ...
+ns.ObjectiveTracker = ns.ObjectiveTracker or {}
+
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("ADDON_LOADED")
+frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+
+function frame:ADDON_LOADED(name)
+	if name == addonName then
+		OQ = OQ or {}
+		OQ.ObjectiveTracker = OQ.ObjectiveTracker or {}
+
+		if OQ.ObjectiveTracker.locked == nil then
+			ns.ObjectiveTracker.SetLocked(true)
+		else
+			ns.ObjectiveTracker.SetLocked(OQ.ObjectiveTracker.locked)
+		end
+	end
+end
+
 local tracker = ObjectiveTrackerFrame
 tracker:SetMovable(true)
 tracker:SetResizable(true)
@@ -40,8 +60,10 @@ resizeBtn.pTex:SetAllPoints()
 resizeBtn:SetNormalTexture(resizeBtn.pTex)
 
 resizeBtn:SetScript("OnMouseDown", function(self)
-	self:GetParent():StartSizing("BOTTOM")
-	tracker.tex:Show()
+	if not OQ.ObjectiveTracker.locked then
+		self:GetParent():StartSizing("BOTTOM")
+		tracker.tex:Show()
+	end
 end)
 
 resizeBtn:SetScript("OnMouseUp", function(self)
@@ -51,14 +73,25 @@ resizeBtn:SetScript("OnMouseUp", function(self)
 	tracker.tex:Hide()
 end)
 
---Moving
-trackerBlocks.QuestHeader:SetScript("OnMouseDown", function()
-	tracker:ClearAllPoints()
-	tracker:StartMoving()
-
-	tracker.tex:Show()
+ns.ObjectiveTracker.OnLockedChanged = ns.Util.MergeFunc(ns.ObjectiveTracker.OnLockedChanged, function(locked)
+	if locked then
+		resizeBtn:Hide()
+	else
+		resizeBtn:Show()
+	end
 end)
-trackerBlocks.QuestHeader:SetScript("OnMouseUp", function()
+
+--Moving
+ns.Util.AppendScript(trackerBlocks.QuestHeader, "OnMouseDown", function(self, btn)
+	if btn == "LeftButton" and not OQ.ObjectiveTracker.locked then
+		tracker:ClearAllPoints()
+		tracker:StartMoving()
+
+		tracker.tex:Show()
+	end
+end)
+
+ns.Util.AppendScript(trackerBlocks.QuestHeader, "OnMouseUp", function()
 	tracker:StopMovingOrSizing()
 
 	tracker.tex:Hide()
