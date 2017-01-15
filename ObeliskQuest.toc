@@ -7,4 +7,4 @@
 rewards.lua
 zoneTracking.lua
 zoneAbandon.lua
-objectiveTracker.lua
+objectiveTrackerMoveResize.lua
