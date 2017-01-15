@@ -4,13 +4,15 @@ ns.Util = ns.Util or {}
 
 function ns.Util.AppendScript(frame, handler, func)
 	local old = frame:GetScript(handler)
-	frame:SetScript(handler, function( ... )
-		if old ~= nil then
-			old(...)
-		end
 
-		func(...)
-	end)
+	if old == nil then
+		frame:SetScript(handler, func)
+	else
+		frame:SetScript(handler, function( ... )
+			old(...)
+			func(...)
+		end)
+	end
 end
 
 function ns.Util.MergeFunc(f1, f2)
