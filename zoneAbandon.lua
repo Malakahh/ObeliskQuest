@@ -37,14 +37,13 @@ local function RegisterHeaderClicks()
 	end
 end
 
-local oldToggleWorldMap = ToggleWorldMap
-function ToggleWorldMap()
-	oldToggleWorldMap()
-
+local function OnWorldMapToggle()
 	if WorldMapFrame:IsShown() then
 		RegisterHeaderClicks()
 	end
 end
+
+hooksecurefunc("ToggleWorldMap", OnWorldMapToggle)
 
 ---------------------
 --- Confirm popup ---
@@ -79,7 +78,7 @@ end
 
 function frame:SetZoneAndShow(zone)
 	frame.zoneToAbandon = zone
-	frame.text:SetText("Abandon quests in zone \"" .. zone .. "\"?")
+	frame.text:SetText("Abandon quests in \"" .. zone .. "\"?")
 	frame:ClearAllPoints()
 	frame:SetPoint("TOP", 0, -130)
 	frame:Show()
