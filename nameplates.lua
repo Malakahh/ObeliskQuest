@@ -83,6 +83,11 @@ function ObeliskQuestTooltipScrape(unitId)
 				progressTexts[#progressTexts] = nil
 			end
 
+			--Remove playername from text if in group
+			if characterName == playerName then
+				text = questText
+			end
+
 			local progressBarText
 			--Give special treatment if world quest or bonus objective with progress bar
 			if WorldQuestsAndBonusObjectives[text] then
@@ -94,11 +99,17 @@ function ObeliskQuestTooltipScrape(unitId)
 				end
 			end
 
+			--Color header
 			if isHeader then
 				text = "|cFFFFD100" .. text .. "|r"
 			end
 
-			progressTexts[#progressTexts + 1] = text .. progressBarText
+			--Append progressBarText (percentage for world quest, for instance)
+			if progressBarText then
+				text = text .. progressBarText
+			end
+
+			progressTexts[#progressTexts + 1] = text
 		end
 	end
 
@@ -114,8 +125,6 @@ local function UpdateProgressText(frame)
 
 	local _, fontHeight = frame.questText:GetFont()
 	frame.questText:SetText(finalProgressText or "")
-	--frame.questText:SetWidth(frame.questText:GetStringWidth())
-	--frame.questText:SetHeight(25 * #progressTexts)
 
 	frame:Show()
 end
