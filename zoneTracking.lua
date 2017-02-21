@@ -37,6 +37,22 @@ local function TrackByZone()
 
 		i = i + 1
 	end
+
+	--Consider the following for tracking world quests
+	--[[
+
+	for k, task in pairs(C_TaskQuest.GetQuestsForPlayerByMapID(GetCurrentMapAreaID())) do
+		if task.inProgress then
+			-- track active world quests
+			local questID = task.questId
+			local questName = C_TaskQuest.GetQuestInfoByQuestID(questID)
+			if questName then
+				print(k, questID, questName)
+			end
+		end
+	end
+
+	]]
 end
 
 function frame:QUEST_ACCEPTED()
