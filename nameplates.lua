@@ -106,10 +106,12 @@ local function ValidateQuestText(text)
 		questTitleCache = text
 		return "questTitle", QuestCache[text].isComplete
 	elseif QuestCache[questTitleCache] then
-		for objectiveText, finished in pairs(QuestCache[questTitleCache]) do
-			local detachedText, _, characterName = DetachObjectiveText(text)
+		for _, finished in pairs(QuestCache[questTitleCache]) do
+			local _, _, characterName = DetachObjectiveText(text)
 
-			if objectiveText == detachedText then
+			local dash = string.match(text, "^%s?(%-)")
+
+			if dash and dash ~= "" or characterName	and characterName ~= "" then --Objective texts start with a dash
 				if characterName ~= nil and characterName ~= "" and characterName ~= playerName then
 					return "questObjectiveParty"
 				end
@@ -125,6 +127,7 @@ local function QuestTooltipScrape(unitId)
 	sourceTooltip:SetUnit(unitId)
 
 	local progressTexts = {}
+	questTitleCache = nil
 
 	for i = 3, sourceTooltip:NumLines() do
 		local str = _G["ObeliskSourceTooltipTextLeft" .. i]
@@ -251,7 +254,11 @@ local function FormatQuestText(scrapedTexts)
 		elseif textType == "questTitle" then
 			formattedText = formattedText .. titleColor .. detachedText .. "|r"
 		elseif textType == "questObjective" then
-			formattedText = formattedText .. " - " .. detachedProgress .. " " .. detachedText
+			if detachedProgress then
+				formattedText = formattedText .. " - " .. detachedProgress .. " " .. detachedText
+			else
+				formattedText = formattedText .. " - " .. detachedText
+			end
 		end
 	end
 
