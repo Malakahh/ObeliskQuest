@@ -82,17 +82,20 @@ ns.ObjectiveTracker.OnLockedChanged = ns.Util.MergeFunc(ns.ObjectiveTracker.OnLo
 end)
 
 --Moving
-ns.Util.AppendScript(trackerBlocks.QuestHeader, "OnMouseDown", function(self, btn)
+local function StartMove(self, btn)
 	if btn == "LeftButton" and not OQ.ObjectiveTracker.locked then
 		tracker:ClearAllPoints()
 		tracker:StartMoving()
 
 		tracker.tex:Show()
 	end
-end)
+end
 
-ns.Util.AppendScript(trackerBlocks.QuestHeader, "OnMouseUp", function()
+local function StopMove()
 	tracker:StopMovingOrSizing()
 
 	tracker.tex:Hide()
-end)
+end
+
+ns.Util.AppendScript(ObeliskQuestObjectiveTrackerHeader, "OnMouseDown", StartMove)
+ns.Util.AppendScript(ObeliskQuestObjectiveTrackerHeader, "OnMouseUp", StopMove)

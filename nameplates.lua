@@ -5,6 +5,12 @@ local anchorPoint = {
 	20 -- y offset
 }
 
+----------------------------
+---	End of customization ---
+----------------------------
+
+local _, ns = ...
+
 --Generic nameplate stuff
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")
@@ -22,7 +28,13 @@ frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end
 -- Enable quest information in tooltip, required for scraping
 SetCVar('showQuestTrackingTooltips', '1')
 
+local playerName = UnitName("player")
+
 local WorldQuestsAndBonusObjectives = {
+	-- [questName] = questId
+}
+
+local QuestCache = {
 	-- [questName] = questId
 }
 
@@ -54,210 +66,152 @@ function frame:QUEST_REMOVED(questId)
 	end
 end
 
-local sourceTooltip = CreateFrame("GameTooltip", "ObeliskSourceTooltip", nil, "GameTooltipTemplate")
-local playerName = UnitName("player")
-
-local function DetachObjectiveText(objectiveText)
-	--Matches a potential character name (if in group), and whatever remains
-	local name, remainder = string.match(objectiveText, "^ ?([^ ]-) %- (.+)$")
-
-	--Matches x/y style objective text
-	local progress, text = string.match(objectiveText, "(%d+/%d+) (.+)$")
-
-	--print("text: ", text, "remainder:", remainder, "objectiveText", objectiveText)
-
-	return text or remainder or objectiveText, progress, name
-end
-
-local QuestCache = {
-	-- [questName] = {
-	-- 		["questId"] = questId,
-	--		["isComplete"] = bool
-	-- 		[objectiveText] = finished
-	-- }	
-}
-
-local function BuildQuestCache()
-	wipe(QuestCache)
-
-	for i = 1, GetNumQuestLogEntries() do
-		local title, _, _, isHeader, _, isComplete, _, questId = GetQuestLogTitle(i)
-		if not isHeader then
-			QuestCache[title] = {
-				questId = questId,
-				isComplete = isComplete
-			}
-
-			for objectiveId = 1, GetNumQuestLeaderBoards(i) do
-				objectiveText, _, finished = GetQuestObjectiveInfo(questId, objectiveId, false)
-
-				QuestCache[title][DetachObjectiveText(objectiveText)] = finished
-			end
-		end
-	end
-end
-
-local questTitleCache
-local function ValidateQuestText(text)
+local function GetTitle(text)
 	if WorldQuestsAndBonusObjectives[text] then
-		questTitleCache = text
-		return "worldQuestTitle", false
+		return text, "worldQuestTitle"
 	elseif QuestCache[text] then
-		questTitleCache = text
-		return "questTitle", QuestCache[text].isComplete
-	elseif QuestCache[questTitleCache] then
-		for _, finished in pairs(QuestCache[questTitleCache]) do
-			local _, _, characterName = DetachObjectiveText(text)
+		return text, "questTitle"
+	elseif ns.InstanceTooltipName[text] then
+		return text, "instanceTitle"
+	end
 
-			local dash = string.match(text, "^%s?(%-)")
+	return nil
+end
 
-			if dash and dash ~= "" or characterName	and characterName ~= "" then --Objective texts start with a dash
-				if characterName ~= nil and characterName ~= "" and characterName ~= playerName then
-					return "questObjectiveParty"
-				end
+local function GetObjectiveText(text)
+	--Matches a potential character name (if in group), and whatever remains
+	local characterName, noProgressObjectiveText = string.match(text, "^ ?([^ ]-) %- (.+)$")
 
-				return "questObjective", finished
-			end
-		end
+	--Matches prefix x/y style objective text
+	local progressPrefix, progressObjectiveTextPrefix = string.match(text, " ?- (%d+/%d+) (.+)$")
+
+	--Matches postfix x/y style objective text
+	local progressObjectiveTextPostfix, progressPostfix = string.match(text, "%- (.+): (%d+/%d+)$")
+
+	local objectiveTextType = "objectiveText"
+
+	if characterName and characterName ~= "" and characterName ~= playerName then
+		objectiveTextType = "objectiveTextParty"
+	end
+
+	if progressObjectiveTextPrefix or progressObjectiveTextPostfix or noProgressObjectiveText then
+		return progressObjectiveTextPrefix or progressObjectiveTextPostfix or noProgressObjectiveText, progressPrefix or progressPostfix, characterName, objectiveTextType
+	else 
+		return nil
 	end
 end
+
+local sourceTooltip = CreateFrame("GameTooltip", "ObeliskSourceTooltip", nil, "GameTooltipTemplate")
 
 local function QuestTooltipScrape(unitId)
 	sourceTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 	sourceTooltip:SetUnit(unitId)
 
-	local progressTexts = {}
-	questTitleCache = nil
+	local tooltipTexts = {}
 
 	for i = 3, sourceTooltip:NumLines() do
 		local str = _G["ObeliskSourceTooltipTextLeft" .. i]
 		local text = str and str:GetText()
 		if not text then return end
 
-		local textType, completed = ValidateQuestText(text)
-
-		if textType then
-			progressTexts[#progressTexts + 1] = {text, textType, completed}
-		end
-
-
-		-- -- Pattern explanation: Start at beginning, matches the first word, then an optional '-' separator, then whatever remains
-		-- local characterName, questText = string.match(text, "^ ([^ ]-) ?%- (.+)$")
-		
-		-- -- Pattern explanation: Matches a number, followed by a percentage symbol and a space, followed by the word 'Threat'
-		-- local threat = string.match(text, "(%d+)%% Threat")
-
-		-- local isHeader = not string.match(text, "^ - ")
-
-		-- if characterName and not threat and characterName ~= "" and characterName ~= playerName then
-		-- 	progressTexts[#progressTexts] = "headerFromGroupMember" --remove previous entry, as this quest is for another player in our group
-		-- elseif not threat then
-		-- 	--If last header was from a qroup members quest, remove it
-		-- 	if progressTexts[#progressTexts] == "headerFromGroupMember" then
-		-- 		progressTexts[#progressTexts] = nil
-		-- 	end
-
-		-- 	--Remove playername from text if in group
-		-- 	if characterName == playerName then
-		-- 		text = questText
-		-- 	end
-
-		-- 	local progressBarText
-		-- 	--Give special treatment if world quest or bonus objective with progress bar
-		-- 	if WorldQuestsAndBonusObjectives[text] then
-		-- 		local questId = WorldQuestsAndBonusObjectives[text]
-		-- 		local progress = C_TaskQuest.GetQuestProgressBarInfo(questId)
-				
-		-- 		if progress then
-		-- 			progressBarText = " - " .. progress .. "%" 
-		-- 		end
-		-- 	end
-
-		-- 	--Color header
-		-- 	if isHeader then
-		-- 		text = "|cFFFFD100" .. text .. "|r"
-		-- 	end
-
-		-- 	--Append progressBarText (percentage for world quest, for instance)
-		-- 	if progressBarText then
-		-- 		text = text .. progressBarText
-		-- 	end
-
-		-- 	progressTexts[#progressTexts + 1] = text
-		-- end
+		tooltipTexts[#tooltipTexts + 1] = text
 	end
 
-	return progressTexts
+	return tooltipTexts
 end
 
-local function FilterQuestTexts(scrapedTexts)
-	local addedWorldQuests = {}
-	local temp = {}
-	local currentQuestIndex = -1
+local function ArrangeTexts(scrapedTexts)
+	local arrangedTexts = {}
 
 	for i = 1, #scrapedTexts do
-		local originalText, textType = unpack(scrapedTexts[i])
+		local titleText, titleType = GetTitle(scrapedTexts[i])
+		local objectiveText, objectiveProgress, characterName, objectiveTextType = GetObjectiveText(scrapedTexts[i])
 
-		if textType == "worldQuestTitle" or textType == "questTitle" then
-			currentQuestIndex = i
+		if titleText then
+			arrangedTexts[#arrangedTexts + 1] = {
+				rawText = scrapedTexts[i],
+				text = titleText,
+				type = titleType,
+				objectives = {
+					--[num] = objectiveInfo
+				}
+			}
+		elseif objectiveText and arrangedTexts[#arrangedTexts] and arrangedTexts[#arrangedTexts].objectives then
+			local obj = arrangedTexts[#arrangedTexts].objectives
 
-			--Don't added repeated world quests.
-			--The idea is to remove world quests from party members.
-			--This relies on the first one being ours
-			if not addedWorldQuests[originalText] then
-				temp[i] = scrapedTexts[i]
-				addedWorldQuests[originalText] = true
-			end
-		elseif textType == "questObjectiveParty" then
-			--Don't add quests from partymembers
-			if currentQuestIndex ~= -1 then --remove title
-				temp[currentQuestIndex] = nil
-				currentQuestIndex = -1
-			end
-		elseif textType == "questObjective" then
-			temp[i] = scrapedTexts[i]
+			obj[#obj + 1] = {
+				rawText = scrapedTexts[i],
+				text = objectiveText,
+				progress = objectiveProgress,
+				characterName = characterName,
+				type = objectiveTextType
+			}
 		end
 	end
 
-	--fix table
-	local filteredTexts = {}
-	for _, v in pairs(temp) do
-		filteredTexts[#filteredTexts + 1] = v
-	end
-
-	return filteredTexts
+	return arrangedTexts
 end
 
-local function FormatQuestText(scrapedTexts)
-	local filteredTexts = FilterQuestTexts(scrapedTexts)
+local function FilterQuestTexts(arrangedTexts)
+	local addedWorldQuests = {}
+	local filtered = {}
+
+	for i = 1, #arrangedTexts do
+		if not addedWorldQuests[arrangedTexts[i].text] then --Filter recurring world quests, removing world quests from party members. First one should be ours
+			if arrangedTexts[i].type == "worldQuestTitle" then
+				addedWorldQuests[arrangedTexts[i].text] = true
+			end
+
+			filtered[#filtered + 1] = ns.Util.CopyTable(arrangedTexts[i])
+			filtered[#filtered].objectives = {}
+
+			local obj = arrangedTexts[i].objectives
+
+			--Objectives
+			for k = 1, #obj do
+				--Don't add quests from partymembers
+				if obj[k].type == "questObjectiveParty" then
+					filtered[#filtered] = nil --Remove already added title
+					k = #obj --skip to end
+				else
+					filtered[#filtered].objectives[k] = ns.Util.CopyTable(obj[k])
+				end
+			end
+		end
+	end
+
+	return filtered
+end
+
+local function FormatQuestText(filteredTexts)
 	local formattedText = ""
 	local titleColor = "|cFFFFD100"
-	local partyQuestRemoved = false
 
 	for i = 1, #filteredTexts do
-		local originalText, textType, completed = unpack(filteredTexts[i])
-		local detachedText, detachedProgress = DetachObjectiveText(originalText)
-		
 		if formattedText ~= "" then
 			formattedText = formattedText .. "|n"
 		end
 
-		if textType == "worldQuestTitle" then
-			local questId = WorldQuestsAndBonusObjectives[detachedText]
+		formattedText = formattedText .. titleColor .. filteredTexts[i].text .. "|r"
+		
+		if filteredTexts[i].type == "worldQuestTitle" then
+			local questId = WorldQuestsAndBonusObjectives[filteredTexts[i].text]
 			local progress = C_TaskQuest.GetQuestProgressBarInfo(questId)
-
-			formattedText = formattedText .. titleColor .. detachedText .. "|r"
 
 			if progress then
 				formattedText = formattedText .. " - " .. progress .. "%"
 			end
-		elseif textType == "questTitle" then
-			formattedText = formattedText .. titleColor .. detachedText .. "|r"
-		elseif textType == "questObjective" then
-			if detachedProgress then
-				formattedText = formattedText .. " - " .. detachedProgress .. " " .. detachedText
+		end
+
+		--objectives
+		local obj = filteredTexts[i].objectives
+		for k = 1, #obj do
+			formattedText = formattedText .. "|n"
+
+			if obj[k].progress then
+				formattedText = formattedText .. " - " .. obj[k].progress .. " " .. obj[k].text
 			else
-				formattedText = formattedText .. " - " .. detachedText
+				formattedText = formattedText .. " - " .. obj[k].text
 			end
 		end
 	end
@@ -266,12 +220,12 @@ local function FormatQuestText(scrapedTexts)
 end
 
 local function UpdateProgressText(frame)
-	local progressTexts = QuestTooltipScrape(frame.unitId)
-	local formattedText = FormatQuestText(progressTexts)
+	local tooltipTexts = QuestTooltipScrape(frame.unitId)
+	local arrangedTexts = ArrangeTexts(tooltipTexts)
+	local filteredTexts = FilterQuestTexts(arrangedTexts)
+	local formattedText = FormatQuestText(filteredTexts)
 
-	local _, fontHeight = frame.questText:GetFont()
 	frame.questText:SetText(formattedText)
-
 	frame:Show()
 end
 
@@ -320,6 +274,17 @@ function frame:NAME_PLATE_UNIT_REMOVED(unitId)
 	end
 
 	ActiveHelperPlates[plate] = nil
+end
+
+local function BuildQuestCache()
+	wipe(QuestCache)
+
+	for i = 1, GetNumQuestLogEntries() do
+		local title, _, _, isHeader, _, isComplete, _, questId = GetQuestLogTitle(i)
+		if not isHeader then
+			QuestCache[title] = questId
+		end
+	end
 end
 
 function frame:UNIT_QUEST_LOG_CHANGED(unitId)

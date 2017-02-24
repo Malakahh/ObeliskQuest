@@ -2,10 +2,13 @@ local addonName, ns = ...
 ns.ObjectiveTracker = ns.ObjectiveTracker or {}
 
 --Frame to properly load SavedVariables
-local frame = CreateFrame("Frame")
+local frame = CreateFrame("Frame", "ObeliskQuestObjectiveTrackerHeader")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+
+frame:SetSize(200, 25)
+frame:SetPoint("TOP", ObjectiveTrackerBlocksFrame, "TOP")
 
 local function HeaderContextMenu_ToggleLock(self)
 	ns.ObjectiveTracker.SetLocked(not OQ.ObjectiveTracker.locked)
@@ -46,15 +49,20 @@ function frame:ADDON_LOADED(name)
 	end
 end
 
-function frame:PLAYER_ENTERING_WORLD()
-	local dropdown = CreateFrame("Frame", "ObjectiveTrackerHeaderDropdown", UIParent, "UIDropdownMenuTemplate")
-	UIDropDownMenu_SetWidth(dropdown, 200)
-	UIDropDownMenu_Initialize(dropdown, HeaderContextMenu, "MENU")
+local dropdown
 
-	local header = ObjectiveTrackerBlocksFrame.QuestHeader
-	ns.Util.AppendScript(header, "OnMouseDown", function(self, btn)
-		if btn == "RightButton" then
-			ToggleDropDownMenu(1, nil, dropdown, "cursor", 3, -3)
-		end
-	end)
+local function ShowDropDown(self, btn)
+	if btn == "RightButton" then
+		ToggleDropDownMenu(1, nil, dropdown, "cursor", 3, -3)
+	end
+end
+
+function frame:PLAYER_ENTERING_WORLD()
+	if not dropdown then
+		dropdown = CreateFrame("Frame", "ObjectiveTrackerHeaderDropdown", UIParent, "UIDropdownMenuTemplate")
+		UIDropDownMenu_SetWidth(dropdown, 200)
+		UIDropDownMenu_Initialize(dropdown, HeaderContextMenu, "MENU")
+	end
+
+	ns.Util.AppendScript(ObeliskQuestObjectiveTrackerHeader, "OnMouseDown", ShowDropDown)
 end
