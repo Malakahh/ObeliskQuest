@@ -26,7 +26,7 @@ frame:RegisterEvent("NAME_PLATE_UNIT_REMOVED") --plate is hidden
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 
 -- Enable quest information in tooltip, required for scraping
-SetCVar('showQuestTrackingTooltips', '1')
+SetCVar("showQuestTrackingTooltips", "1")
 
 local playerName = UnitName("player")
 

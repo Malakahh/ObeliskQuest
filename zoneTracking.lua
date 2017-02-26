@@ -4,6 +4,9 @@ frame:RegisterEvent("QUEST_ACCEPTED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("LOADING_SCREEN_DISABLED")
 
+-- Disable blizzard automatic quest tracking
+SetCVar("autoQuestWatch", "0")
+
 local function UntrackAll()
 	for i = 1, GetNumQuestLogEntries() do
 		if IsQuestWatched(i) then
