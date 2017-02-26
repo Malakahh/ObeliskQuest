@@ -154,12 +154,15 @@ end
 
 local function FilterQuestTexts(arrangedTexts)
 	local addedWorldQuests = {}
+	local addedInstanceQuests = {}
 	local filtered = {}
 
 	for i = 1, #arrangedTexts do
-		if not addedWorldQuests[arrangedTexts[i].text] then --Filter recurring world quests, removing world quests from party members. First one should be ours
+		if not addedWorldQuests[arrangedTexts[i].text] and not addedInstanceQuests[arrangedTexts[i].text] then --Filter recurring world and instance quests, removing quests from party members. First one should be ours
 			if arrangedTexts[i].type == "worldQuestTitle" then
 				addedWorldQuests[arrangedTexts[i].text] = true
+			elseif arrangedTexts[i].type = "instanceTitle" then
+				addedInstanceQuests[arrangedTexts[i].text] = true
 			end
 
 			filtered[#filtered + 1] = ns.Util.CopyTable(arrangedTexts[i])
