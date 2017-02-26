@@ -4,7 +4,7 @@ ns.ObjectiveTracker = ns.ObjectiveTracker or {}
 --Frame to properly load SavedVariables
 local frame = CreateFrame("Frame", "ObeliskQuestObjectiveTrackerHeader")
 frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 
 frame:SetSize(200, 25)
@@ -57,7 +57,7 @@ local function ShowDropDown(self, btn)
 	end
 end
 
-function frame:PLAYER_ENTERING_WORLD()
+function frame:PLAYER_LOGIN()
 	if not dropdown then
 		dropdown = CreateFrame("Frame", "ObjectiveTrackerHeaderDropdown", UIParent, "UIDropdownMenuTemplate")
 		UIDropDownMenu_SetWidth(dropdown, 200)
