@@ -2,7 +2,7 @@
 ## Title: |cFFDDCF99Obelisk|r Quest
 ## Author: Malakahh
 ## Notes: Upgraded questing UI
-## Version: 0.6.5b
+## Version: 0.7b
 
 ## SavedVariables: OQ
 
@@ -14,3 +14,4 @@ zoneAbandon.lua
 objectiveTrackerMenu.lua
 objectiveTrackerMoveResize.lua
 nameplates.lua
+acceptAllQuestsBtn.lua

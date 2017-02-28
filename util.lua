@@ -47,22 +47,37 @@ function ns.Util.CopyTable(source)
 end
 
 function ns.Util.Dump(value, depth)
-	if not value then return end
+	if type(value) == "nil" then return "" end
 
 	depth = depth or 0
 
 	local str = ""
 
-	for i = 1, depth do
-		str = tostring(str) .. "-"
+	if type(value) ~= "table" then
+		return str .. " " .. tostring(value)
+	else
+		if depth > 0 then
+			str = str .. " {|n"
+		else
+			str = str .. "|n"
+		end
+
+		for k,v in pairs(value) do
+			for i = 1, depth do
+				str = str .. "  "
+			end
+
+			str = str .. "- |cFFFF00FF" .. k .. "|r:" .. ns.Util.Dump(v, depth + 1) .. ",|n"
+		end
+
+		if depth > 0 then
+			str = str .. "}"
+		end
 	end
 
-	if type(value) ~= "table" then
-		print(str .. " " .. tostring(value))
+	if depth == 0 then
+		print(str)
 	else
-		for k,v in pairs(value) do
-			print(str .. " |cFFFF00FF" .. k .. "|r:")
-			ns.Util.Dump(v, depth + 1)
-		end
+		return str
 	end
 end
