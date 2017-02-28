@@ -67,7 +67,6 @@ btn:SetScript("OnClick", function()
 	for i = 1, GetNumGossipAvailableQuests() do
 		local title = select(i * 7 - 6, GetGossipAvailableQuests())
 		if availableQuestsInfo[title] and not availableQuestsInfo[title].isIgnored then
-			print("title", title)
 			SelectGossipAvailableQuest(i)
 		end
 	end	
