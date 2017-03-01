@@ -8,20 +8,21 @@ btn:SetText("Accept Quests")
 btn:SetWidth(btn:GetTextWidth() + 20)
 
 local availableQuestsInfo = {}
+local acceptQuestsCoroutine
 
 local function GetAvailableQuestInfo()
 	local temp = {}
 	for i = 1, GetNumGossipAvailableQuests() do
 		local title, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored = select(i * 7 - 6, GetGossipAvailableQuests())
 
-		temp[title] = {
+		temp[i] = {
+			title = title,
 			-- level = level,
 			-- isTrivial = isTrivial,
 			-- frequency = frequency,
 			-- isRepeatable = isRepeatable,
 			-- isLegendary = isLegendary,
 			isIgnored = isIgnored,
-			--index = i
 		}
 	end
 
@@ -29,6 +30,11 @@ local function GetAvailableQuestInfo()
 end
 
 function btn:GOSSIP_SHOW()
+	if acceptQuestsCoroutine and coroutine.status(acceptQuestsCoroutine) == "suspended" then
+		coroutine.resume(acceptQuestsCoroutine)
+		return
+	end
+
 	local shouldShow = false
 
 	for _, v in pairs(GetAvailableQuestInfo()) do
@@ -44,30 +50,26 @@ function btn:GOSSIP_SHOW()
 	end
 end
 
-local function CloseFrame()
-	CloseQuest()
-	CloseGossip()
-end
-
 function btn:QUEST_DETAIL()
-	C_Timer.After(0.0001, function()
-		local title = GetTitleText()
-		if availableQuestsInfo[title] and type(availableQuestsInfo[title].isIgnored) ~= "nil" and not availableQuestsInfo[title].isIgnored then
-			availableQuestsInfo[title] = nil
+	if acceptQuestsCoroutine and coroutine.status(acceptQuestsCoroutine) == "suspended" then
+		if not IsQuestIgnored() then
 			AcceptQuest()
-			C_Timer.After(0.5, CloseFrame) --Time required tested to be 0.25. Using a slower to account for lowspec PCs
 		end
-	end)
+	end
 end
 
 btn:SetScript("OnClick", function()
 	wipe(availableQuestsInfo)
 	availableQuestsInfo = GetAvailableQuestInfo()
 
-	for i = 1, GetNumGossipAvailableQuests() do
-		local title = select(i * 7 - 6, GetGossipAvailableQuests())
-		if availableQuestsInfo[title] and not availableQuestsInfo[title].isIgnored then
-			SelectGossipAvailableQuest(i)
+	acceptQuestsCoroutine = coroutine.create(function()
+		for i = GetNumGossipAvailableQuests(), 1, -1 do
+			if availableQuestsInfo[i] and not availableQuestsInfo[i].isIgnored then
+				SelectGossipAvailableQuest(i)
+				coroutine.yield()
+			end
 		end
-	end	
+	end)	
+
+	coroutine.resume(acceptQuestsCoroutine)
 end)
