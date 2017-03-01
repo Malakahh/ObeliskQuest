@@ -5,6 +5,10 @@ local anchorPoint = {
 	20 -- y offset
 }
 
+--ARGB
+local questTitleColor = "FFFFD100"
+local partyMemberHasObjectiveColor = "FFAAAAFF"
+
 ----------------------------
 ---	End of customization ---
 ----------------------------
@@ -71,7 +75,7 @@ local function GetTitle(text)
 		return text, "worldQuestTitle"
 	elseif QuestCache[text] then
 		return text, "questTitle"
-	elseif ns.InstanceTooltipName[text] then
+	elseif ns.InstanceTooltipName[text] or ns.InstanceNameSubstitutions[text] then
 		return text, "instanceTitle"
 	end
 
@@ -157,6 +161,8 @@ local function FilterQuestTexts(arrangedTexts)
 	local addedInstanceQuests = {}
 	local filtered = {}
 
+	local partyMemberObj = false
+
 	for i = 1, #arrangedTexts do
 		if not addedWorldQuests[arrangedTexts[i].text] and not addedInstanceQuests[arrangedTexts[i].text] then --Filter recurring world and instance quests, removing quests from party members. First one should be ours
 			if arrangedTexts[i].type == "worldQuestTitle" then
@@ -176,11 +182,23 @@ local function FilterQuestTexts(arrangedTexts)
 				if obj[k].type == "questObjectiveParty" then
 					filtered[#filtered] = nil --Remove already added title
 					k = #obj --skip to end
+					partyMemberObj = true
 				else
 					filtered[#filtered].objectives[k] = ns.Util.CopyTable(obj[k])
 				end
 			end
+		else
+			partyMemberObj = true
 		end
+	end
+
+	if partyMemberObj then
+		filtered[#filtered + 1] = {
+			rawText = "Objective of a party member",
+			text = "Objective of a party member",
+			type = "partyMemberHasObjectiveText",
+			objectives = {}
+		}
 	end
 
 	return filtered
@@ -188,14 +206,17 @@ end
 
 local function FormatQuestText(filteredTexts)
 	local formattedText = ""
-	local titleColor = "|cFFFFD100"
 
 	for i = 1, #filteredTexts do
 		if formattedText ~= "" then
 			formattedText = formattedText .. "|n"
 		end
 
-		formattedText = formattedText .. titleColor .. filteredTexts[i].text .. "|r"
+		if filteredTexts[i].type ~= "partyMemberHasObjectiveText" then
+			formattedText = formattedText .. "|c" .. questTitleColor .. filteredTexts[i].text .. "|r"
+		else
+			formattedText = formattedText .. "|c" .. partyMemberHasObjectiveColor .. filteredTexts[i].text .. "|r"
+		end
 		
 		if filteredTexts[i].type == "worldQuestTitle" then
 			local questId = WorldQuestsAndBonusObjectives[filteredTexts[i].text]

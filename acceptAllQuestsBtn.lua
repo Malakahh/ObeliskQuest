@@ -51,9 +51,14 @@ function btn:GOSSIP_SHOW()
 end
 
 function btn:QUEST_DETAIL()
-	if acceptQuestsCoroutine and coroutine.status(acceptQuestsCoroutine) == "suspended" then
+	if acceptQuestsCoroutine and (coroutine.status(acceptQuestsCoroutine) == "suspended" or coroutine.status(acceptQuestsCoroutine) == "dead") then
 		if not IsQuestIgnored() then
 			AcceptQuest()
+		end
+
+		-- If dead, delete coroutine. This makes sure we don't auto accept quests unintendedly
+		if coroutine.status(acceptQuestsCoroutine) == "dead" then
+			acceptQuestsCoroutine = nil
 		end
 	end
 end
@@ -63,13 +68,19 @@ btn:SetScript("OnClick", function()
 	availableQuestsInfo = GetAvailableQuestInfo()
 
 	acceptQuestsCoroutine = coroutine.create(function()
-		for i = GetNumGossipAvailableQuests(), 1, -1 do
+		local num = GetNumGossipAvailableQuests()
+		for i = num, 1, -1 do
 			if availableQuestsInfo[i] and not availableQuestsInfo[i].isIgnored then
 				SelectGossipAvailableQuest(i)
-				coroutine.yield()
+
+				-- Don't yield on last iteration, to allow coroutine to die
+				if i > 1 then
+					coroutine.yield()
+				end
 			end
 		end
 	end)	
 
+	-- Start coroutine
 	coroutine.resume(acceptQuestsCoroutine)
 end)

@@ -1,3 +1,5 @@
+local _, ns = ...
+
 local frame = CreateFrame("Frame")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 frame:RegisterEvent("QUEST_ACCEPTED")
@@ -29,7 +31,7 @@ local function TrackByZone()
 		local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
 
 		if isHeader then
-			if title == currentMapName then
+			if title == currentMapName or ns.InstanceNameSubstitutions[currentMapName] == title then
 				watchQuest = true
 			elseif watchQuest then
 				break

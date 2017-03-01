@@ -2,7 +2,7 @@
 ## Title: |cFFDDCF99Obelisk|r Quest
 ## Author: Malakahh
 ## Notes: Upgraded questing UI
-## Version: 0.7b
+## Version: 0.7.2b
 
 ## SavedVariables: OQ
 

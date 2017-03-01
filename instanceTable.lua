@@ -1,6 +1,6 @@
 local _, ns = ...
 
-ns.InstanceTooltipName = {
+ns.InstanceTooltipName  = {
 
 	-------------
 	---Azeroth---
@@ -127,7 +127,7 @@ ns.InstanceTooltipName = {
 
 	["Hellfire Ramparts"] = true,
 	["Blood Furnace"] = true,
-	["Slave Pens"] = true,
+	["The Slave Pens"] = true,
 	["Underbog"] = true,
 	["Mana-Tombs"] = true,
 	["Auchenai Crypts"] = true,
@@ -158,4 +158,12 @@ ns.InstanceTooltipName = {
 	["Highmaul"] = true,
 	["Blackrock Foundry"] = true,
 	["Hellfire Citadel"] = true,
+}
+
+ns.InstanceNameSubstitutions = {
+        ["The Temple of Atal'hakkar"] = "Sunken Temple",
+        ["Temple of Ahn'Qiraj"] = "Ahn'Qiraj",
+        ["Ruins of Ahn'Qiraj"] = "Ahn'Qiraj",
+        -- ["Karazhan"] = "Karazhan [A] (Start)";
+        -- ["Black Temple"] = "Black Temple [A] (Start)";
 }
