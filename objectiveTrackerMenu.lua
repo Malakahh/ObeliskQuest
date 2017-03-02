@@ -9,6 +9,7 @@ frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end
 
 frame:SetSize(200, 25)
 frame:SetPoint("TOP", ObjectiveTrackerBlocksFrame, "TOP")
+frame:SetFrameStrata("BACKGROUND")
 
 local function HeaderContextMenu_ToggleLock(self)
 	ns.ObjectiveTracker.SetLocked(not OQ.ObjectiveTracker.locked)
