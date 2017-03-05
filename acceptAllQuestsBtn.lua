@@ -54,7 +54,6 @@ local currentIndex = 0
 
 function btn:QUEST_DETAIL()
 	if availableQuestsInfo[currentIndex] then
-		currentIndex = currentIndex - 1
 
 		if not IsQuestIgnored() then
 			AcceptQuest()
@@ -62,10 +61,12 @@ function btn:QUEST_DETAIL()
 		end
 
 		-- If dead, delete coroutine. This makes sure we don't auto accept quests unintendedly
-		if currentIndex == 0 then
+		if currentIndex == 1 then
 			acceptQuestsCoroutine = nil
 		end
 	end
+
+	currentIndex = currentIndex - 1
 end
 
 btn:SetScript("OnClick", function()
@@ -75,15 +76,15 @@ btn:SetScript("OnClick", function()
 	acceptQuestsCoroutine = coroutine.create(function()
 		currentIndex = GetNumGossipAvailableQuests()
 
-		if currentIndex <= 2 then
+		if currentIndex < 2 then
 			SelectGossipAvailableQuest(1)
 		else
-			while currentIndex > 0 do
-				if availableQuestsInfo[currentIndex] and not availableQuestsInfo[currentIndex].isIgnored then
-					SelectGossipAvailableQuest(currentIndex)
+			for i = currentIndex, 1, -1 do
+				if availableQuestsInfo[i] and not availableQuestsInfo[i].isIgnored then
+					SelectGossipAvailableQuest(i)
 					
 					-- Don't yield on last iteration, to allow coroutine to die
-					if currentIndex > 2 then
+					if i > 1 then
 						coroutine.yield()
 					end
 				end
