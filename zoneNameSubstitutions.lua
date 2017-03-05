@@ -1,9 +1,10 @@
 local _, ns = ...
 
-ns.InstanceNameSubstitutions = {
+ns.ZoneNameSubstitutions = {
         ["The Temple of Atal'hakkar"] = "Sunken Temple",
         ["Temple of Ahn'Qiraj"] = "Ahn'Qiraj",
         ["Ruins of Ahn'Qiraj"] = "Ahn'Qiraj",
+        ["Tanaan Jungle"] = "Assault on the Dark Portal",
         -- ["Karazhan"] = "Karazhan [A] (Start)";
         -- ["Black Temple"] = "Black Temple [A] (Start)";
 }

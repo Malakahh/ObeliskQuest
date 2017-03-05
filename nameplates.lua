@@ -74,7 +74,7 @@ local function GetTitle(text)
 		return text, "worldQuestTitle"
 	elseif QuestCache[text] then
 		return text, "questTitle"
-	elseif text == GetMapNameByID(GetCurrentMapAreaID()) or ns.InstanceNameSubstitutions[text] then
+	elseif text == GetMapNameByID(GetCurrentMapAreaID()) or ns.ZoneNameSubstitutions[text] then
 		return text, "instanceTitle"
 	end
 

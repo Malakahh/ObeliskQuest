@@ -31,7 +31,7 @@ local function TrackByZone()
 		local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
 
 		if isHeader then
-			if title == currentMapName or ns.InstanceNameSubstitutions[currentMapName] == title then
+			if title == currentMapName or ns.ZoneNameSubstitutions[currentMapName] == title then
 				watchQuest = true
 			elseif watchQuest then
 				break
