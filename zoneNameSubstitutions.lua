@@ -1,10 +1,12 @@
 local _, ns = ...
 
 ns.ZoneNameSubstitutions = {
-        ["The Temple of Atal'hakkar"] = "Sunken Temple",
-        ["Temple of Ahn'Qiraj"] = "Ahn'Qiraj",
-        ["Ruins of Ahn'Qiraj"] = "Ahn'Qiraj",
-        ["Tanaan Jungle"] = "Assault on the Dark Portal",
+        ["The Temple of Atal'hakkar"] = { "Sunken Temple", },
+        ["Temple of Ahn'Qiraj"] = { "Ahn'Qiraj", },
+        ["Ruins of Ahn'Qiraj"] = { "Ahn'Qiraj", },
+        ["Tanaan Jungle"] = { "Assault on the Dark Portal", },
+        ["Lunarfall"] = { "Shadowmoon Valley", "Garrison", },
+        ["Frostwall"] = { "Frostfire Ridge", "Garrison", },
         -- ["Karazhan"] = "Karazhan [A] (Start)";
         -- ["Black Temple"] = "Black Temple [A] (Start)";
 }
