@@ -49,6 +49,7 @@ function GetAvailableQuestInfoTable()
 			temp[i] = {
 				title = GetAvailableTitle(i),
 				-- level = GetAvailableLevel(1),
+				-- isTrivial = isTrivial,
 				-- frequency = frequency,
 				-- isRepeatable = isRepeatable,
 				-- isLegendary = isLegendary,
