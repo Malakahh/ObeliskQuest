@@ -2,34 +2,67 @@ local btn = CreateFrame("Button", "ObeliskQuestAcceptAllQuestsButton", GossipFra
 btn:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 btn:RegisterEvent("GOSSIP_SHOW")
 btn:RegisterEvent("QUEST_DETAIL")
+btn:RegisterEvent("QUEST_GREETING")
 
-btn:SetPoint("BOTTOMLEFT", GossipFrame, "BOTTOMLEFT", 2, 4)
 btn:SetText("Accept Quests")
 btn:SetWidth(btn:GetTextWidth() + 20)
 
+local currentState = ""
 local availableQuestsInfo = {}
 local acceptQuestsCoroutine
 
-local function GetAvailableQuestInfo()
-	local temp = {}
-	for i = 1, GetNumGossipAvailableQuests() do
-		local title, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored = select(i * 7 - 6, GetGossipAvailableQuests())
+local function SetState(state)
+	currentState = state
 
-		temp[i] = {
-			title = title,
-			-- level = level,
-			-- isTrivial = isTrivial,
-			-- frequency = frequency,
-			-- isRepeatable = isRepeatable,
-			-- isLegendary = isLegendary,
-			isIgnored = isIgnored,
-		}
+	if currentState == "GOSSIP_SHOW" then
+		btn:SetParent(GossipFrame)
+		btn:SetPoint("BOTTOMLEFT", GossipFrame, "BOTTOMLEFT", 2, 4)
+	elseif currentState == "QUEST_GREETING" then
+		btn:SetParent(QuestFrameGreetingPanel)
+		btn:SetPoint("BOTTOMLEFT", QuestFrameGreetingPanel, "BOTTOMLEFT", 2, 20)
+	end
+end
+
+function GetAvailableQuestInfoTable()
+	local temp = {}
+
+	if currentState == "GOSSIP_SHOW" then
+		local availableQuests = { GetGossipAvailableQuests() }
+
+		for i = 1, GetNumGossipAvailableQuests() do
+			--local title, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored = select(i * 7 - 6, GetGossipAvailableQuests())
+
+			temp[i] = {
+				title = availableQuests[i * 7 - 6],
+				-- level = availableQuests[i * 7 - 5],
+				-- isTrivial = availableQuests[i * 7 - 4],
+				-- frequency = availableQuests[i * 7 - 3],
+				-- isRepeatable = availableQuests[i * 7 - 2],
+				-- isLegendary = availableQuests[i * 7 - 1],
+				isIgnored = availableQuests[i * 7],
+			}
+		end
+	elseif currentState == "QUEST_GREETING" then -- Handle QUEST_GREETING, because why consistency?
+		for i = 1, GetNumAvailableQuests() do
+			local isTrivial, frequency, isRepeatable, isLegendary, isIgnored = GetAvailableQuestInfo(i);
+
+			temp[i] = {
+				title = GetAvailableTitle(i),
+				-- level = GetAvailableLevel(1),
+				-- frequency = frequency,
+				-- isRepeatable = isRepeatable,
+				-- isLegendary = isLegendary,
+				isIgnored = isIgnored,
+			}
+		end
+	else
+		return nil
 	end
 
 	return temp
 end
 
-function btn:GOSSIP_SHOW()
+local function OnGossipShow()
 	if acceptQuestsCoroutine and coroutine.status(acceptQuestsCoroutine) == "suspended" then
 		coroutine.resume(acceptQuestsCoroutine)
 		return
@@ -37,7 +70,7 @@ function btn:GOSSIP_SHOW()
 
 	local shouldShow = false
 
-	for _, v in pairs(GetAvailableQuestInfo()) do
+	for _, v in pairs(GetAvailableQuestInfoTable()) do
 		if not v.isIgnored and not shouldShow then
 			shouldShow = true
 		end
@@ -48,6 +81,16 @@ function btn:GOSSIP_SHOW()
 	else
 		btn:Hide()
 	end
+end
+
+function btn:GOSSIP_SHOW()
+	SetState("GOSSIP_SHOW")
+	OnGossipShow()
+end
+
+function btn:QUEST_GREETING()
+	SetState("QUEST_GREETING")
+	OnGossipShow()
 end
 
 local currentIndex = 0
@@ -71,17 +114,25 @@ end
 
 btn:SetScript("OnClick", function()
 	wipe(availableQuestsInfo)
-	availableQuestsInfo = GetAvailableQuestInfo()
+	availableQuestsInfo = GetAvailableQuestInfoTable()
 
 	acceptQuestsCoroutine = coroutine.create(function()
-		currentIndex = GetNumGossipAvailableQuests()
+		currentIndex = #availableQuestsInfo
 
 		if currentIndex < 2 then
-			SelectGossipAvailableQuest(1)
+			if currentState == "GOSSIP_SHOW" then
+				SelectGossipAvailableQuest(1)
+			elseif currentState == "QUEST_GREETING" then
+				SelectAvailableQuest(1)
+			end
 		else
 			for i = currentIndex, 1, -1 do
 				if availableQuestsInfo[i] and not availableQuestsInfo[i].isIgnored then
-					SelectGossipAvailableQuest(i)
+					if currentState == "GOSSIP_SHOW" then
+						SelectGossipAvailableQuest(i)
+					elseif currentState == "QUEST_GREETING" then
+						SelectAvailableQuest(i)
+					end
 					
 					-- Don't yield on last iteration, to allow coroutine to die
 					if i > 1 then
