@@ -225,13 +225,15 @@ local function FormatQuestText(filteredTexts)
 end
 
 local function UpdateProgressText(frame)
-	local tooltipTexts = QuestTooltipScrape(frame.unitId)
-	local arrangedTexts = ArrangeTexts(tooltipTexts)
-	local filteredTexts = FilterQuestTexts(arrangedTexts)
-	local formattedText = FormatQuestText(filteredTexts)
+	C_Timer.After(0.001, function()
+		local tooltipTexts = QuestTooltipScrape(frame.unitId)
+		local arrangedTexts = ArrangeTexts(tooltipTexts)
+		local filteredTexts = FilterQuestTexts(arrangedTexts)
+		local formattedText = FormatQuestText(filteredTexts)
 
-	frame.questText:SetText(formattedText)
-	frame:Show()
+		frame.questText:SetText(formattedText)
+		frame:Show()
+	end)
 end
 
 local HelperPlates = {
@@ -267,7 +269,7 @@ function frame:NAME_PLATE_UNIT_ADDED(unitId)
 
 	f.unitId = unitId
 
-	UpdateProgressText(f, unitId)
+	UpdateProgressText(f)
 end
 
 function frame:NAME_PLATE_UNIT_REMOVED(unitId)
