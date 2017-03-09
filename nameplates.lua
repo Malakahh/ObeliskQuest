@@ -203,7 +203,7 @@ local function FormatQuestText(filteredTexts)
 			local questId = WorldQuestsAndBonusObjectives[filteredTexts[i].text]
 			local progress = C_TaskQuest.GetQuestProgressBarInfo(questId)
 
-			if progress then
+			if type(progress) ~= "nil" then
 				formattedText = formattedText .. " - " .. progress .. "%"
 			end
 		end
