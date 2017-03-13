@@ -7,6 +7,7 @@ ns.ZoneNameSubstitutions = {
         ["Tanaan Jungle"] = { "Assault on the Dark Portal", },
         ["Lunarfall"] = { "Shadowmoon Valley", "Garrison", "Garrison Support", },
         ["Frostwall"] = { "Frostfire Ridge", "Garrison", "Garrison Support", },
+        ["Thunder Totem"] = { "Highmountain", },
         -- ["Karazhan"] = "Karazhan [A] (Start)";
         -- ["Black Temple"] = "Black Temple [A] (Start)";
 }
