@@ -2,7 +2,7 @@ local anchorPoint = {
 	"BOTTOM", -- Anchor point of text
 	"TOP", -- Anchor point of parent frame
 	0, -- x offset
-	20 -- y offset
+	10 -- y offset
 }
 
 --ARGB
@@ -176,9 +176,10 @@ local function FilterQuestTexts(arrangedTexts)
 
 			--Objectives
 			for k = 1, #obj do
+
 				--Don't add quests from partymembers
 				if obj[k].type == "objectiveTextParty" then
-					filtered[#filtered] = nil --Remove already added title
+					filtered[#filtered].objectives[k] = nil --Remove already added title
 					k = #obj --skip to end
 				else
 					filtered[#filtered].objectives[k] = ns.Util.CopyTable(obj[k])
