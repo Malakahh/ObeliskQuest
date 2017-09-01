@@ -30,8 +30,6 @@ function GetAvailableQuestInfoTable()
 		local availableQuests = { GetGossipAvailableQuests() }
 
 		for i = 1, GetNumGossipAvailableQuests() do
-			--local title, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored = select(i * 7 - 6, GetGossipAvailableQuests())
-
 			temp[i] = {
 				title = availableQuests[i * 7 - 6],
 				-- level = availableQuests[i * 7 - 5],
@@ -39,13 +37,10 @@ function GetAvailableQuestInfoTable()
 				-- frequency = availableQuests[i * 7 - 3],
 				-- isRepeatable = availableQuests[i * 7 - 2],
 				-- isLegendary = availableQuests[i * 7 - 1],
-				isIgnored = availableQuests[i * 7],
 			}
 		end
 	elseif currentState == "QUEST_GREETING" then -- Handle QUEST_GREETING, because why consistency?
 		for i = 1, GetNumAvailableQuests() do
-			local isTrivial, frequency, isRepeatable, isLegendary, isIgnored = GetAvailableQuestInfo(i);
-
 			temp[i] = {
 				title = GetAvailableTitle(i),
 				-- level = GetAvailableLevel(1),
@@ -53,7 +48,6 @@ function GetAvailableQuestInfoTable()
 				-- frequency = frequency,
 				-- isRepeatable = isRepeatable,
 				-- isLegendary = isLegendary,
-				isIgnored = isIgnored,
 			}
 		end
 	else
@@ -99,10 +93,8 @@ local currentIndex = 0
 function btn:QUEST_DETAIL()
 	if availableQuestsInfo[currentIndex] then
 
-		if not IsQuestIgnored() then
-			AcceptQuest()
-			CloseQuest()
-		end
+		AcceptQuest()
+		CloseQuest()
 
 		-- If dead, delete coroutine. This makes sure we don't auto accept quests unintendedly
 		if currentIndex == 1 then
@@ -128,17 +120,15 @@ btn:SetScript("OnClick", function()
 			end
 		else
 			for i = currentIndex, 1, -1 do
-				if availableQuestsInfo[i] and not availableQuestsInfo[i].isIgnored then
-					if currentState == "GOSSIP_SHOW" then
-						SelectGossipAvailableQuest(i)
-					elseif currentState == "QUEST_GREETING" then
-						SelectAvailableQuest(i)
-					end
-					
-					-- Don't yield on last iteration, to allow coroutine to die
-					if i > 1 then
-						coroutine.yield()
-					end
+				if currentState == "GOSSIP_SHOW" then
+					SelectGossipAvailableQuest(i)
+				elseif currentState == "QUEST_GREETING" then
+					SelectAvailableQuest(i)
+				end
+				
+				-- Don't yield on last iteration, to allow coroutine to die
+				if i > 1 then
+					coroutine.yield()
 				end
 			end
 		end
