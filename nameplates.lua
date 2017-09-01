@@ -42,7 +42,8 @@ local QuestCache = {
 }
 
 function frame:PLAYER_LOGIN()
-	for _, wq in pairs(C_TaskQuest.GetQuestsForPlayerByMapID(GetCurrentMapAreaID())) do
+	local mapAreaId = GetCurrentMapAreaID()
+	for _, wq in pairs(C_TaskQuest.GetQuestsForPlayerByMapID(mapAreaId)) do
 		if wq.inProgress then
 			local questId = wq.questId
 			local name = C_TaskQuest.GetQuestInfoByQuestID(questId)
