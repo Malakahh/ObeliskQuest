@@ -1,7 +1,7 @@
 local _, ns = ...
 
 ns.ZoneNameSubstitutions = {
-        ["The Temple of Atal'hakkar"] = { "Sunken Temple", },
+        ["The Temple of Atal'Hakkar"] = { "Sunken Temple", },
         ["Temple of Ahn'Qiraj"] = { "Ahn'Qiraj", },
         ["Ruins of Ahn'Qiraj"] = { "Ahn'Qiraj", },
         ["Tanaan Jungle"] = { "Assault on the Dark Portal", },
