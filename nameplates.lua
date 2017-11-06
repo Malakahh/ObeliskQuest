@@ -213,11 +213,9 @@ local function FormatQuestText(filteredTexts)
 		--objectives
 		local obj = filteredTexts[i].objectives
 		for k = 1, #obj do
-			formattedText = formattedText .. "|n"
-
 			if obj[k].progress then
-				formattedText = formattedText .. " - " .. obj[k].progress .. " " .. obj[k].text
-			else
+				formattedText = formattedText .. "|n - " .. obj[k].progress .. " " .. obj[k].text
+			elseif filteredTexts[i].type ~= "worldQuestTitle" then
 				formattedText = formattedText .. " - " .. obj[k].text
 			end
 		end
