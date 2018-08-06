@@ -20,10 +20,8 @@ end
 local function TrackByZone()
 	UntrackAll()
 
-	--local currentMapName = GetZoneText()
-	SetMapToCurrentZone()
-	local currentMapName = GetMapNameByID(GetCurrentMapAreaID())
-
+	local mapId = C_Map.GetBestMapForUnit("player")
+	local currentMapName = C_Map.GetMapInfo(mapId).name
 	local i = 1
 	local watchQuest = false
 

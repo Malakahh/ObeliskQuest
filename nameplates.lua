@@ -18,7 +18,7 @@ local _, ns = ...
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("PLAYER_LEAVING_WORD")
+frame:RegisterEvent("PLAYER_LEAVING_WORLD")
 frame:RegisterEvent("QUEST_ACCEPTED")
 frame:RegisterEvent("QUEST_REMOVED")
 frame:RegisterEvent("QUEST_LOG_UPDATE")
@@ -42,7 +42,8 @@ local QuestCache = {
 }
 
 function frame:PLAYER_LOGIN()
-	local mapAreaId = GetCurrentMapAreaID()
+	
+	local mapAreaId = C_Map.GetBestMapForUnit("player")
 	for _, wq in pairs(C_TaskQuest.GetQuestsForPlayerByMapID(mapAreaId)) do
 		if wq.inProgress then
 			local questId = wq.questId
@@ -75,7 +76,7 @@ local function GetTitle(text)
 		return text, "worldQuestTitle"
 	elseif QuestCache[text] then
 		return text, "questTitle"
-	elseif text == GetMapNameByID(GetCurrentMapAreaID()) or ns.ZoneNameSubstitutions[text] then
+	elseif text == C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player")).name or ns.ZoneNameSubstitutions[text] then
 		return text, "instanceTitle"
 	end
 

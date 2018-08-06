@@ -1,6 +1,7 @@
 local _, ns = ...
 
 ns.ZoneNameSubstitutions = {
+		--["Name of zone"] = { "Quest Cathegory ''zone'' 1", "Quest Cathegory ''zone'' 2", ... }
         ["The Temple of Atal'Hakkar"] = { "Sunken Temple", },
         ["Temple of Ahn'Qiraj"] = { "Ahn'Qiraj", },
         ["Ruins of Ahn'Qiraj"] = { "Ahn'Qiraj", },
@@ -8,6 +9,7 @@ ns.ZoneNameSubstitutions = {
         ["Lunarfall"] = { "Shadowmoon Valley", "Garrison", "Garrison Support", },
         ["Frostwall"] = { "Frostfire Ridge", "Garrison", "Garrison Support", },
         ["Thunder Totem"] = { "Highmountain", },
+        ["Silithus"] = { "Silithus: The Wound", }
         -- ["Karazhan"] = "Karazhan [A] (Start)";
         -- ["Black Temple"] = "Black Temple [A] (Start)";
 }

@@ -1,5 +1,10 @@
 local frame = CreateFrame("Frame", "ObeliskQuestZoneAbandonConfirmPopup", UIParent)
 
+frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+
+
 local function AbandonQuestByZone(zone)
 	local startAbandoning = false
 	local i = 1
@@ -25,15 +30,21 @@ end
 
 local function OnClick(self, button)
 	if button == "RightButton" then
-		frame:SetZoneAndShow(self:GetText())
+		frame:SetZoneAndShow(self.ButtonText:GetText())
 	else
 		QuestMapLogHeaderButton_OnClick(self, button)
 	end
 end
 
+local function CheckFrameIsQuestHeader(f)
+	return type(f) == "table" and f.ButtonText ~= nil and f.questID == nil
+end
+
 local function RegisterHeaderClicks()
-	for _, child in pairs(QuestScrollFrame.Contents.Headers) do
-		child:SetScript("OnClick", OnClick)
+	for _, child in pairs(QuestScrollFrame.Contents:GetLayoutChildren()) do
+		if CheckFrameIsQuestHeader(child) then
+			child:SetScript("OnClick", OnClick)
+		end
 	end
 end
 
@@ -43,7 +54,9 @@ local function OnWorldMapToggle()
 	end
 end
 
-hooksecurefunc("ToggleWorldMap", OnWorldMapToggle)
+function frame:PLAYER_ENTERING_WORLD()
+	hooksecurefunc("ToggleWorldMap", OnWorldMapToggle)
+end
 
 ---------------------
 --- Confirm popup ---
