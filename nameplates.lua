@@ -309,7 +309,7 @@ function frame:QUEST_LOG_UPDATE()
 	BuildQuestCache()
 end
 
-function frame:PLAYER_LEAVING_WORD()
+function frame:PLAYER_LEAVING_WORLD()
 	frame:UnregisterEvent("QUEST_LOG_UPDATE")
 end
 
