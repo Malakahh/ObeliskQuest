@@ -1,0 +1,3 @@
+[submodule "libs/ObeliskFramework"]
+	path = libs/ObeliskFramework
+	url = https://github.com/Malakahh/ObeliskFramework.git
