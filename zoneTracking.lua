@@ -4,10 +4,8 @@ local frame = CreateFrame("Frame")
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 frame:RegisterEvent("QUEST_ACCEPTED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-frame:RegisterEvent("LOADING_SCREEN_DISABLED")
-
--- Disable blizzard automatic quest tracking
-SetCVar("autoQuestWatch", "0")
+-- frame:RegisterEvent("LOADING_SCREEN_DISABLED")
+frame:RegisterEvent("PLAYER_LOGIN")
 
 local function UntrackAll()
 	for i = 1, GetNumQuestLogEntries() do
@@ -17,8 +15,21 @@ local function UntrackAll()
 	end
 end
 
+local function UntrackNonplayerTracked()
+	for i = 1, GetNumQuestLogEntries() do
+		local _, _, _, _, _, _, _, questID = GetQuestLogTitle(i)
+		if IsQuestWatched(i) and not OQ.userTrackedQuests[questID] then
+			RemoveQuestWatch(i)
+		end
+	end
+end
+
 local function TrackByZone()
-	UntrackAll()
+	if OQ.Options.ZoneTracking.Behaviour == "Fully Automatic" then
+		UntrackAll()
+	elseif OQ.Options.ZoneTracking.Behaviour == "Semi Automatic" then
+		UntrackNonplayerTracked()
+	end
 
 	local mapId = C_Map.GetBestMapForUnit("player")
 	local currentMapName = C_Map.GetMapInfo(mapId).name
@@ -59,14 +70,43 @@ local function TrackByZone()
 end
 
 function frame:QUEST_ACCEPTED()
-	TrackByZone()
+	if OQ.Options.ZoneTracking.Behaviour ~= "Blizzard Default" then
+		TrackByZone()
+	end
 end
 
 function frame:ZONE_CHANGED_NEW_AREA()
-	TrackByZone()
+	if OQ.Options.ZoneTracking.Behaviour ~= "Blizzard Default" then
+		TrackByZone()
+	end
 end
 
-function frame:LOADING_SCREEN_DISABLED()
-	TrackByZone()
-end
+-- function frame:LOADING_SCREEN_DISABLED()
+-- 	if OQ.Options.ZoneTracking.Behaviour ~= "Blizzard Default" then
+-- 		--TrackByZone()
+-- 	end
+-- end
 
+function frame:PLAYER_LOGIN( ... )
+	OQ.userTrackedQuests = OQ.userTrackedQuests or {}
+	ns.Options:RegisterForOkay(function( ... )
+		if OQ.Options.ZoneTracking.Behaviour == "Blizzard Default" then
+			UntrackAll()
+
+			-- Enable blizzard automatic quest tracking
+			SetCVar("autoQuestWatch", "1")
+		else
+			-- Disable blizzard automatic quest tracking
+			SetCVar("autoQuestWatch", "0")
+			TrackByZone()
+		end
+	end)
+
+	hooksecurefunc("QuestMapQuestOptions_TrackQuest", function(questID)
+		if not OQ.userTrackedQuests[questID] and IsQuestWatched(GetQuestLogIndexByID(questID)) then
+			OQ.userTrackedQuests[questID] = true
+		else
+			OQ.userTrackedQuests[questID] = nil	
+		end
+	end)
+end

@@ -9,7 +9,8 @@ ns.ZoneNameSubstitutions = {
         ["Lunarfall"] = { "Shadowmoon Valley", "Garrison", "Garrison Support", },
         ["Frostwall"] = { "Frostfire Ridge", "Garrison", "Garrison Support", },
         ["Thunder Totem"] = { "Highmountain", },
-        ["Silithus"] = { "Silithus: The Wound", }
+        ["Silithus"] = { "Silithus: The Wound", },
+        ["Darkmoon Island"] = {"Darkmoon Faire"},
         -- ["Karazhan"] = "Karazhan [A] (Start)";
         -- ["Black Temple"] = "Black Temple [A] (Start)";
 }
