@@ -15,7 +15,6 @@ ns.ZoneNameSubstitutions = {
         -- ["Black Temple"] = "Black Temple [A] (Start)";
 }
 
-
 -- ns.InstanceTooltipName  = {
 
 -- 	-------------
