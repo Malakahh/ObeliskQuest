@@ -6,7 +6,7 @@ frame:RegisterEvent("QUEST_ACCEPTED")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("LOADING_SCREEN_DISABLED")
 frame:RegisterEvent("PLAYER_LOGIN")
-frame:RegisterEvent("AREA_POIS_UPDATED")
+frame:RegisterEvent("QUEST_POI_UPDATE")
 
 local function UntrackAll()
 	for i = 1, GetNumQuestLogEntries() do
@@ -25,27 +25,6 @@ local function UntrackNonplayerTracked()
 	end
 end
 
-function TESTLOL()
-	--local currMapID = C_Map.GetBestMapForUnit("player")
-	local currMapID = C_QuestLog.GetMapForQuestPOIs()
-
-	print("mapId: " .. currMapID)
-	
-	local data = C_QuestLog.GetQuestsOnMap(currMapID)
-	for k,v in ipairs(data) do
-		local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(GetQuestLogIndexByID(v.questID))
-
-		local info = C_Map.GetMapInfoAtPosition(currMapID, v.x, v.y)
-		ns.Util.Dump(info)
-
-		if info.mapID == currMapID then
-			AddQuestWatch(GetQuestLogIndexByID(v.questID))
-		else
-			print(title)
-		end
-	end
-end
-
 local function TrackByZone()
 	if OQ.Options.ZoneTracking.Behaviour == "Fully Automatic" then
 		UntrackAll()
@@ -53,74 +32,44 @@ local function TrackByZone()
 		UntrackNonplayerTracked()
 	end
 
-	-- Take 3
 	local currMapID = C_Map.GetBestMapForUnit("player")
-	local data = C_QuestLog.GetQuestsOnMap(currMapID)
-	for k,v in ipairs(data) do
-		local info = C_Map.GetMapInfoAtPosition(currMapID, v.x, v.y)
-		if info.mapID == currMapID then
-			AddQuestWatch(GetQuestLogIndexByID(v.questID))
+	if currMapID then
+		-- Two pronged approach. We track all quests that appear on the world map, and quests that appear under an appropriate header in the questlog.
+		-- The reason for this is that some quests does not appear on the map but are still relevant for the zone, i.e. "Call to Arms: Tiragarde Sound" which objective is to kill 10 players.
+
+		-- Track quests that appear as blobs on the map
+		local data = C_QuestLog.GetQuestsOnMap(currMapID)
+		for k,v in ipairs(data) do
+			local info = C_Map.GetMapInfoAtPosition(currMapID, v.x, v.y)
+			if info == nil or info.mapID == currMapID then
+				AddQuestWatch(GetQuestLogIndexByID(v.questID))
+			end
+		end
+
+		-- Track quests that appear under the zone header
+		local uiMapDetails = C_Map.GetMapInfo(currMapID)
+		if uiMapDetails then
+			local currentMapName = uiMapDetails.name
+			local i = 1
+			local watchQuest = false
+
+			while GetQuestLogTitle(i) do
+				local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
+
+				if isHeader then
+					if title == currentMapName or (ns.ZoneNameSubstitutions[currentMapName] and tContains(ns.ZoneNameSubstitutions[currentMapName], title)) then
+						watchQuest = true
+					elseif watchQuest then
+						break
+					end
+				elseif watchQuest then
+					AddQuestWatch(GetQuestLogIndexByID(questID))
+				end
+
+				i = i + 1
+			end
 		end
 	end
-
-	-- Take 2
-	-- local currMapID = C_Map.GetBestMapForUnit("player")
-	-- local data = C_QuestLog.GetQuestsOnMap(currMapID)
-	-- for k,v in ipairs(data) do
-	-- 	local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(GetQuestLogIndexByID(v.questID))
-	-- 	AddQuestWatch(GetQuestLogIndexByID(v.questID))
-	-- end
-
- 	-- Take 1
-
-	-- local quests = {}
-	-- for i = 1, GetNumQuestLogEntries() do
-	-- 	local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
-	-- 	if questID and questID ~= 0 then
-	-- 		table.insert(quests, {
-	-- 			title = title,
-	-- 			questID = questID
-	-- 			})
-	-- 	end
-	-- end
-
-	-- if #quests > 0 then
-	-- 	for i, questData in ipairs(quests) do
-	-- 		local title = questData.title
-	-- 		local questID = questData.questID
-
-	-- 		local _,x,y = QuestPOIGetIconInfo(questID)
-	-- 		if x and y then
-	-- 			print("adding: " .. title)
-	-- 			AddQuestWatch(GetQuestLogIndexByID(questID))
-	-- 		else
-	-- 			print("Not adding: " .. title)
-	-- 		end
-	-- 	end
-	-- end
-
-	-- OLD 
-
-	-- local mapId = C_Map.GetBestMapForUnit("player")
-	-- local currentMapName = C_Map.GetMapInfo(mapId).name
-	-- local i = 1
-	-- local watchQuest = false
-
-	-- while GetQuestLogTitle(i) do
-	-- 	local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
-
-	-- 	if isHeader then
-	-- 		if title == currentMapName or (ns.ZoneNameSubstitutions[currentMapName] and tContains(ns.ZoneNameSubstitutions[currentMapName], title)) then
-	-- 			watchQuest = true
-	-- 		elseif watchQuest then
-	-- 			break
-	-- 		end
-	-- 	elseif watchQuest then
-	-- 		AddQuestWatch(GetQuestLogIndexByID(questID))
-	-- 	end
-
-	-- 	i = i + 1
-	-- end
 
 	--Consider the following for tracking world quests
 	--[[
@@ -146,7 +95,6 @@ function frame:QUEST_ACCEPTED()
 end
 
 function frame:ZONE_CHANGED_NEW_AREA()
-	print("Zone Changed")
 	if OQ.Options.ZoneTracking.Behaviour ~= "Blizzard Default" then
 		TrackByZone()
 	end
@@ -158,7 +106,7 @@ function frame:LOADING_SCREEN_DISABLED()
 	end
 end
 
-function frame:AREA_POIS_UPDATED()
+function frame:QUEST_POI_UPDATE()
 	if OQ.Options.ZoneTracking.Behaviour ~= "Blizzard Default" then
 		TrackByZone()
 	end

@@ -72,11 +72,17 @@ function frame:QUEST_REMOVED(questId)
 end
 
 local function GetTitle(text)
+	local uiMapId = C_Map.GetBestMapForUnit("player")
+	local uiMapDetails
+	if uiMapId then
+		uiMapDetails = C_Map.GetMapInfo(uiMapId)
+	end
+
 	if WorldQuestsAndBonusObjectives[text] then
 		return text, "worldQuestTitle"
 	elseif QuestCache[text] then
 		return text, "questTitle"
-	elseif text == C_Map.GetMapInfo(C_Map.GetBestMapForUnit("player")).name or ns.ZoneNameSubstitutions[text] then
+	elseif (uiMapDetails and text == uiMapDetails.name) or ns.ZoneNameSubstitutions[text] then
 		return text, "instanceTitle"
 	end
 
