@@ -1,8 +1,8 @@
-## Interface: 80000
+## Interface: 80300
 ## Title: |cFFDDCF99Obelisk|r Quest
 ## Author: Malakahh
 ## Notes: Upgraded questing UI
-## Version: 1.3
+## Version: 1.4
 
 ## SavedVariables: OQ
 

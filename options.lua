@@ -39,7 +39,7 @@ local function onDefault(self,  ... )
 	ns.Util.CopyTable(defaultSettings, OQ.Options)
 end
 
-local panel = libOptions(addonName, nil, onRefresh, onOkay, onCancel, onDefault)
+local panel = libOptions:New(addonName, nil, onRefresh, onOkay, onCancel, onDefault)
 ns.Options = panel
 
 panel:SetScript("OnEvent", function(self, event, ... ) self[event](self, ...) end)
@@ -48,7 +48,7 @@ function panel:ADDON_LOADED( name )
 	if name == addonName then
 		OQ = OQ or {}
 		OQ.Options = OQ.Options or {}
-		ns.Util.CopyTable(defaultSettings, OQ.Options)
+		ns.Util.Table.Copy(defaultSettings, OQ.Options)
 
 		if OQ.Options.ZoneTracking.Behaviour == "Blizzard Default" then
 			SetCVar("autoQuestWatch", "1")
