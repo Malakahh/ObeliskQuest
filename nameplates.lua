@@ -90,11 +90,12 @@ local function GetTitle(text)
 end
 
 local function GetObjectiveText(text)
+
 	--Matches a potential character name (if in group), and whatever remains
 	local characterName, noProgressObjectiveText = string.match(text, "^ ?([^ ]-) %- (.+)$")
 
 	--Matches prefix x/y style objective text
-	local progressPrefix, progressObjectiveTextPrefix = string.match(text, " ?- (%d+/%d+) (.+)$")
+	local progressPrefix, progressObjectiveTextPrefix = string.match(text, "%s*?-%s*(%d+/%d+) (.+)$")
 
 	--Matches postfix x/y style objective text
 	local progressObjectiveTextPostfix, progressPostfix = string.match(text, "%- (.+): (%d+/%d+)$")
@@ -176,7 +177,7 @@ local function FilterQuestTexts(arrangedTexts)
 				addedInstanceQuests[arrangedTexts[i].text] = true
 			end
 
-			filtered[#filtered + 1] = ns.Util.CopyTable(arrangedTexts[i])
+			filtered[#filtered + 1] = ns.Util.Table.Copy(arrangedTexts[i])
 			filtered[#filtered].objectives = {}
 
 			local obj = arrangedTexts[i].objectives
@@ -189,7 +190,7 @@ local function FilterQuestTexts(arrangedTexts)
 					filtered[#filtered].objectives[k] = nil --Remove already added title
 					k = #obj --skip to end
 				else
-					filtered[#filtered].objectives[k] = ns.Util.CopyTable(obj[k])
+					filtered[#filtered].objectives[k] = ns.Util.Table.Copy(obj[k])
 				end
 			end
 		end
