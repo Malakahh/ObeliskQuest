@@ -55,8 +55,8 @@ function frame:PLAYER_LOGIN()
 	end
 end
 
-function frame:QUEST_ACCEPTED(logIndex, questId)
-	if IsQuestTask(questId) then --bonus objectives
+function frame:QUEST_ACCEPTED(questId)
+	if C_QuestLog.IsQuestTask(questId) then --bonus objectives
 		local name = C_TaskQuest.GetQuestInfoByQuestID(questId)
 		if name then
 			WorldQuestsAndBonusObjectives[name] = questId
@@ -134,11 +134,9 @@ end
 
 local function ArrangeTexts(scrapedTexts)
 	local arrangedTexts = {}
-
 	for i = 1, #scrapedTexts do
 		local titleText, titleType = GetTitle(scrapedTexts[i])
 		local objectiveText, objectiveProgress, characterName, objectiveTextType = GetObjectiveText(scrapedTexts[i])
-
 		if titleText then
 			arrangedTexts[#arrangedTexts + 1] = {
 				rawText = scrapedTexts[i],
@@ -160,7 +158,7 @@ local function ArrangeTexts(scrapedTexts)
 			}
 		end
 	end
-
+	
 	return arrangedTexts
 end
 
@@ -293,11 +291,13 @@ end
 
 local function BuildQuestCache()
 	wipe(QuestCache)
+	local numShowEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
 
-	for i = 1, GetNumQuestLogEntries() do
-		local title, _, _, isHeader, _, isComplete, _, questId = GetQuestLogTitle(i)
-		if not isHeader then
-			QuestCache[title] = questId
+	for i = 1, numShowEntries do
+		--local title, _, _, isHeader, _, isComplete, _, questId = GetQuestLogTitle(i)
+		local info = C_QuestLog.GetInfo(i)
+		if not info.isHeader then
+			QuestCache[info.title] = info.questID
 		end
 	end
 end

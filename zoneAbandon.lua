@@ -1,4 +1,4 @@
-local frame = CreateFrame("Frame", "ObeliskQuestZoneAbandonConfirmPopup", UIParent)
+local frame = CreateFrame("Frame", "ObeliskQuestZoneAbandonConfirmPopup", UIParent, "BackdropTemplate")
 
 frame:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -9,19 +9,21 @@ local function AbandonQuestByZone(zone)
 	local startAbandoning = false
 	local i = 1
 
-	while GetQuestLogTitle(i) do
-		local title, _, _, isHeader = GetQuestLogTitle(i)
+	while C_QuestLog.GetInfo(i) do
+		local info = C_QuestLog.GetInfo(i)
 
-		if isHeader then
-			if title == zone then
+		if info.isHeader then
+			if info.title == zone then
 				startAbandoning = true
 			elseif startAbandoning then
 				break
 			end
 		elseif startAbandoning then
-			SelectQuestLogEntry(i)
-			SetAbandonQuest()
-			AbandonQuest()
+			C_QuestLog.SetSelectedQuest(info.questID)
+			--SetAbandonQuest()
+			C_QuestLog.SetAbandonQuest()
+			--AbandonQuest()
+			C_QuestLog.AbandonQuest()
 		end
 
 		i = i + 1
@@ -32,7 +34,7 @@ local function OnClick(self, button)
 	if button == "RightButton" then
 		frame:SetZoneAndShow(self.ButtonText:GetText())
 	else
-		QuestMapLogHeaderButton_OnClick(self, button)
+	 	QuestLogHeaderCodeMixin.OnClick(self, button)
 	end
 end
 
@@ -43,6 +45,7 @@ end
 local function RegisterHeaderClicks()
 	for _, child in pairs(QuestScrollFrame.Contents:GetLayoutChildren()) do
 		if CheckFrameIsQuestHeader(child) then
+			child:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 			child:SetScript("OnClick", OnClick)
 		end
 	end
@@ -90,6 +93,7 @@ local function SetTilingArtwork(frame, bgFile, edgeFile, edgeSize, insets)
 end
 
 function frame:SetZoneAndShow(zone)
+	PlaySound(SOUNDKIT.IG_MAINMENU_OPEN);
 	frame.zoneToAbandon = zone
 	frame.text:SetText("Abandon quests in \"" .. zone .. "\"?")
 	frame:ClearAllPoints()
@@ -126,6 +130,7 @@ frame.btnYes:SetWidth(120)
 frame.btnYes:SetPoint("BOTTOMRIGHT", frame, "BOTTOM", -5, 20)
 frame.btnYes:SetScript("OnClick", function(self)
 	AbandonQuestByZone(frame.zoneToAbandon)
+	PlaySound(SOUNDKIT.IG_QUEST_LOG_ABANDON_QUEST);
 	frame:Hide()
 end)
 
@@ -134,5 +139,6 @@ frame.btnNo:SetText("No")
 frame.btnNo:SetWidth(120)
 frame.btnNo:SetPoint("BOTTOMLEFT", frame, "BOTTOM", 5, 20)
 frame.btnNo:SetScript("OnClick", function(self)
+	PlaySound(SOUNDKIT.IG_MAINMENU_CLOSE);
 	frame:Hide()
 end)

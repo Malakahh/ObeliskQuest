@@ -23,13 +23,13 @@ local function SetState(state)
 	end
 end
 
-function GetAvailableQuestInfoTable()
+local function GetAvailableQuestInfoTable()
 	local temp = {}
 
 	if currentState == "GOSSIP_SHOW" then
-		local availableQuests = { GetGossipAvailableQuests() }
+		local availableQuests = { C_GossipInfo.GetAvailableQuests() }
 
-		for i = 1, GetNumGossipAvailableQuests() do
+		for i = 1, C_GossipInfo.GetNumAvailableQuests() do
 			temp[i] = {
 				title = availableQuests[i * 7 - 6],
 				-- level = availableQuests[i * 7 - 5],
@@ -40,7 +40,7 @@ function GetAvailableQuestInfoTable()
 			}
 		end
 	elseif currentState == "QUEST_GREETING" then -- Handle QUEST_GREETING, because why consistency?
-		for i = 1, GetNumAvailableQuests() do
+		for i = 1, C_GossipInfo.GetNumAvailableQuests() do
 			temp[i] = {
 				title = GetAvailableTitle(i),
 				-- level = GetAvailableLevel(1),
@@ -108,20 +108,19 @@ end
 btn:SetScript("OnClick", function()
 	wipe(availableQuestsInfo)
 	availableQuestsInfo = GetAvailableQuestInfoTable()
-
 	acceptQuestsCoroutine = coroutine.create(function()
 		currentIndex = #availableQuestsInfo
 
 		if currentIndex < 2 then
 			if currentState == "GOSSIP_SHOW" then
-				SelectGossipAvailableQuest(1)
+				C_GossipInfo.SelectAvailableQuest(1)
 			elseif currentState == "QUEST_GREETING" then
 				SelectAvailableQuest(1)
 			end
 		else
 			for i = currentIndex, 1, -1 do
 				if currentState == "GOSSIP_SHOW" then
-					SelectGossipAvailableQuest(i)
+					C_GossipInfo.SelectAvailableQuest(1)
 				elseif currentState == "QUEST_GREETING" then
 					SelectAvailableQuest(i)
 				end

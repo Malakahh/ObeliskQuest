@@ -9,18 +9,26 @@ frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("QUEST_POI_UPDATE")
 
 local function UntrackAll()
-	for i = 1, GetNumQuestLogEntries() do
-		if IsQuestWatched(i) then
-			RemoveQuestWatch(i)
+	local numShowEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
+
+	for i = 1, numQuests do
+		local questID = C_QuestLog.GetQuestIDForLogIndex(i)
+		--if IsQuestWatched(i) then
+			--print(C_QuestLog.GetQuestWatchType(questID))
+		if C_QuestLog.GetQuestWatchType(questID) then
+			C_QuestLog.RemoveQuestWatch(questID)
 		end
 	end
 end
 
 local function UntrackNonplayerTracked()
-	for i = 1, GetNumQuestLogEntries() do
-		local _, _, _, _, _, _, _, questID = GetQuestLogTitle(i)
-		if IsQuestWatched(i) and not OQ.userTrackedQuests[questID] then
-			RemoveQuestWatch(i)
+	local numShowEntries, numQuests = C_QuestLog.GetNumQuestLogEntries()
+
+	for i = 1, numQuests do
+		local questID = C_QuestLog.GetQuestIDForLogIndex(i)
+		--if IsQuestWatched(i) and not OQ.userTrackedQuests[questID] then
+		if C_QuestLog.GetQuestWatchType(questID) and not OQ.userTrackedQuests[questID] then
+			C_QuestLog.RemoveQuestWatch(questID)
 		end
 	end
 end
@@ -42,7 +50,7 @@ local function TrackByZone()
 		for k,v in ipairs(data) do
 			local info = C_Map.GetMapInfoAtPosition(currMapID, v.x, v.y)
 			if info == nil or info.mapID == currMapID then
-				AddQuestWatch(GetQuestLogIndexByID(v.questID))
+				C_QuestLog.AddQuestWatch(v.questID, 1)
 			end
 		end
 
@@ -53,17 +61,18 @@ local function TrackByZone()
 			local i = 1
 			local watchQuest = false
 
-			while GetQuestLogTitle(i) do
-				local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
+			while C_QuestLog.GetInfo(i) do
+				local info = C_QuestLog.GetInfo(i)
+				--local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
 
-				if isHeader then
-					if title == currentMapName or (ns.ZoneNameSubstitutions[currentMapName] and tContains(ns.ZoneNameSubstitutions[currentMapName], title)) then
+				if info.isHeader then
+					if info.title == currentMapName or (ns.ZoneNameSubstitutions[currentMapName] and tContains(ns.ZoneNameSubstitutions[currentMapName], info.title)) then
 						watchQuest = true
 					elseif watchQuest then
 						break
 					end
 				elseif watchQuest then
-					AddQuestWatch(GetQuestLogIndexByID(questID))
+					C_QuestLog.AddQuestWatch(info.questID, 1)
 				end
 
 				i = i + 1
@@ -128,7 +137,8 @@ function frame:PLAYER_LOGIN( ... )
 	end)
 
 	hooksecurefunc("QuestMapQuestOptions_TrackQuest", function(questID)
-		if not OQ.userTrackedQuests[questID] and IsQuestWatched(GetQuestLogIndexByID(questID)) then
+
+		if not OQ.userTrackedQuests[questID] and C_QuestLog.GetQuestWatchType(questID) then
 			OQ.userTrackedQuests[questID] = true
 		else
 			OQ.userTrackedQuests[questID] = nil	
